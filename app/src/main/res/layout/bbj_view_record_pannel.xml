@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:background="@android:color/black"
+    tools:layout_height="136dp">
+
+    <LinearLayout
+        android:id="@+id/layout_record"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="00:91"
+            android:textColor="#ffffffff"
+            android:textSize="14sp" />
+
+        <com.example.demo.BbjRecordButton
+            android:id="@+id/btn_record"
+            android:layout_width="112dp"
+            android:layout_height="112dp"
+            app:blnRadius="38dp"
+            app:totalSecond="60.0"
+            app:progressColor="#F98C78"
+            app:progressWidth="4dp"
+            app:srcPause="@drawable/pause"
+            app:srcStart="@drawable/shoot" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@id/layout_record">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="25dp"
+            android:drawableTop="@drawable/delete"
+            android:drawablePadding="4dp"
+            android:text="回删"
+            android:textColor="#ffffffff"
+            android:textSize="15sp" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/layout_record">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="25dp"
+            android:drawableTop="@drawable/next"
+            android:drawablePadding="4dp"
+            android:text="下一步"
+            android:textColor="#ffffffff"
+            android:textSize="15sp" />
+
+    </FrameLayout>
+
+
+</RelativeLayout>

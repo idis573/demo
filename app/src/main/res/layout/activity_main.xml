@@ -6,9 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.example.demo.CircularProgressView
+    <com.example.demo.RecordPannelView
         android:id="@+id/progress_circular"
-        android:layout_width="300dp"
-        android:layout_height="300dp" />
+        android:layout_width="match_parent"
+        android:layout_height="136dp"
+        android:background="@android:color/black" />
 
 </RelativeLayout>
