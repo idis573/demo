@@ -13,6 +13,7 @@
         <attr name="totalSecond" format="float" />           <!--圆环进度-->
         <attr name="srcPause" format="reference" />         <!--中间按钮资源-->
         <attr name="srcStart" format="reference" />         <!--中间按钮资源-->
-        <attr name="blnRadius" format="dimension"/>   <!--呼吸效果最大外圈半径-->
+        <attr name="blnMaxRadius" format="dimension"/>      <!--呼吸效果最大外圈半径-->
+        <attr name="blnBackgroundColor" format="color"/>      <!--呼吸效果最大外圈半径-->
     </declare-styleable>
 </resources>

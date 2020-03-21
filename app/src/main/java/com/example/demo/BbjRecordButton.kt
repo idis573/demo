@@ -6,7 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import android.view.animation.OvershootInterpolator
+import kotlin.math.PI
 
 /**
  * 圆形进度条控件
@@ -23,10 +23,17 @@ class BbjRecordButton @JvmOverloads constructor(
         const val ANIM_BREATHING_LIGHT_DURATION = 1800L
     }
 
-    enum class Status(val status: Int) {
-        IDLE(0),
-        START(1),
-        PAUSE(2)
+    enum class Status {
+        IDLE,
+        RECORDING,
+        PAUSE
+    }
+
+    enum class PaintType {
+        PROGRESS,
+        PROGRESS_PAUSE,
+        BLN_ANIM,
+        BLN_BG
     }
 
     private var mStatus = Status.IDLE
@@ -36,15 +43,21 @@ class BbjRecordButton @JvmOverloads constructor(
             isPause = value
         }
         get() {
-            return mStatus != Status.START
+            return mStatus != Status.RECORDING
         }
 
-    private val mProgressPaint: Paint   // 绘制画笔
-    private val mSrcPaint: Paint        // 呼吸圈画笔
-    private lateinit var mRectF: RectF  // 绘制区域
-    private var mRecordSecond = 0f     // 录制时长
-    private var mTotalSecond = 300f // 总时长
-    private var mRecordTimeList = mutableListOf<Int>()
+    //画笔
+    private val mPaint: Paint = Paint()
+
+    //外圈圆环绘制区域
+    private lateinit var mRectF: RectF
+    //当前录制时长
+    private var mRecordSecond = 0f
+    //总时长
+    private var mTotalSecond = 300f
+    //暂停时列表时长
+    private var mRecordTimeList = mutableListOf<Float>()
+
     private var mPauseBitmap: Bitmap
     private var mStartBitmap: Bitmap
 
@@ -54,34 +67,36 @@ class BbjRecordButton @JvmOverloads constructor(
 
     //icon呼吸圈半径
     private var mBlnMaxRadius = 0f
+
+    //暂停弧长的角度
+    private var mPauseArcDegree = 0f
+
+    // 呼吸圈画笔
     private var mBlnRadius = 0f
     private var mBlnAnimator: ValueAnimator? = null
+
+    private var mProgressColor = Color.RED
+    private var mBlnBgColor = Color.WHITE
 
 
     init {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.BbjRecordButton)
-        // 初始化进度圆环画笔
-        mProgressPaint = Paint()
-        mProgressPaint.style = Paint.Style.STROKE    // 只描边，不填充
-        mProgressPaint.strokeCap = Paint.Cap.ROUND   // 设置圆角
-        mProgressPaint.isAntiAlias = true              // 设置抗锯齿
-        mProgressPaint.isDither = true                 // 设置抖动
-        mProgressPaint.strokeWidth =
-            typedArray.getDimension(R.styleable.BbjRecordButton_progressWidth, 10f)
-        mProgressPaint.color =
-            typedArray.getColor(R.styleable.BbjRecordButton_progressColor, Color.BLUE)
+
         mPauseBitmap = BitmapFactory.decodeResource(
             resources,
             typedArray.getResourceId(R.styleable.BbjRecordButton_srcPause, R.drawable.pause)
         )
 
-        //初始化呼吸圈画笔
-        mSrcPaint = Paint()
-        mSrcPaint.style = Paint.Style.FILL    // 只描边，不填充
-        mSrcPaint.strokeCap = Paint.Cap.ROUND   // 设置圆角
-        mSrcPaint.isAntiAlias = true            // 设置抗锯齿
-        mSrcPaint.isDither = true               // 设置抖动
-        mSrcPaint.color = typedArray.getColor(R.styleable.BbjRecordButton_progressColor, Color.BLUE)
+        mPaint.strokeWidth =
+            typedArray.getDimension(R.styleable.BbjRecordButton_progressWidth, 10f)
+        mPaint.isAntiAlias = true
+        mPaint.isDither = true
+
+        mProgressColor = typedArray.getColor(R.styleable.BbjRecordButton_progressColor, Color.RED)
+
+        mBlnBgColor =
+            typedArray.getColor(R.styleable.BbjRecordButton_blnBackgroundColor, Color.WHITE)
+
 
         mStartBitmap = BitmapFactory.decodeResource(
             resources,
@@ -90,39 +105,93 @@ class BbjRecordButton @JvmOverloads constructor(
         // 初始化进度
         mTotalSecond = typedArray.getFloat(R.styleable.BbjRecordButton_totalSecond, 0f)
 
-        mBlnMaxRadius = typedArray.getDimension(R.styleable.BbjRecordButton_blnRadius, 228f)
+        mBlnMaxRadius = typedArray.getDimension(R.styleable.BbjRecordButton_blnMaxRadius, 228f)
 
         typedArray.recycle()
 
     }
 
+    private fun getPaint(type: PaintType): Paint {
+        when (type) {
+            PaintType.BLN_ANIM -> {
+                mPaint.color = mProgressColor
+                mPaint.style = Paint.Style.FILL
+            }
+            PaintType.PROGRESS -> {
+                mPaint.color = mProgressColor
+                mPaint.strokeCap = Paint.Cap.ROUND
+                mPaint.style = Paint.Style.STROKE
+                mPaint.strokeWidth = 12f
+            }
+            PaintType.BLN_BG -> {
+                mPaint.color = mBlnBgColor
+                mPaint.style = Paint.Style.FILL
+            }
+            PaintType.PROGRESS_PAUSE -> {
+                mPaint.color = Color.WHITE
+                mPaint.strokeCap = Paint.Cap.BUTT
+                mPaint.style = Paint.Style.STROKE
+            }
+        }
+        return mPaint
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        //1、外圆圈
-        drawCircle(canvas)
+        //icon呼吸和背景
+        drawIconAnim(canvas)
 
-        //2、icon呼吸
-        canvas.drawCircle(mCenterX, mCenterY, mBlnRadius, mSrcPaint)
+        //外圆圈
+        drawProgress(canvas)
 
-        //3、icon
+        //icon
         drawIcon(canvas)
     }
 
-    private fun drawCircle(canvas: Canvas) {
+    private fun drawIconAnim(canvas: Canvas) {
+        if (mStatus == Status.PAUSE || mStatus == Status.RECORDING) {
+            canvas.drawCircle(
+                mCenterX,
+                mCenterX,
+                measuredWidth / 2F,
+                getPaint(PaintType.BLN_BG)
+            )
+        }
+        canvas.drawCircle(mCenterX, mCenterY, mBlnRadius, getPaint(PaintType.BLN_ANIM))
+    }
+
+    private fun drawProgress(canvas: Canvas) {
         when (mStatus) {
             Status.IDLE -> canvas.drawCircle(
                 mCenterX,
                 mCenterY,
-                mStartBitmap.width / 2f + mProgressPaint.strokeWidth + 9,
-                mProgressPaint
+                mStartBitmap.width / 2f + mPaint.strokeWidth + 9,
+                getPaint(PaintType.PROGRESS)
             )
-            else -> canvas.drawArc(
-                mRectF,
-                275f,
-                360f * mRecordSecond / mTotalSecond,
-                false,
-                mProgressPaint
-            )
+            else -> {
+                canvas.drawArc(
+                    mRectF,
+                    275f,
+                    360f * mRecordSecond / mTotalSecond,
+                    false,
+                    getPaint(PaintType.PROGRESS)
+                )
+                var sumTime = 0f
+                var starAngle: Float
+                mRecordTimeList.forEach {
+                    sumTime += it
+                    starAngle = 275f + 360f * sumTime / mTotalSecond
+
+                    canvas.drawArc(
+                        mRectF,
+                        starAngle,
+                        mPauseArcDegree,
+                        false,
+                        getPaint(PaintType.PROGRESS_PAUSE)
+                        //paint
+                    )
+                }
+            }
         }
 
     }
@@ -131,11 +200,11 @@ class BbjRecordButton @JvmOverloads constructor(
         fun drawSrc(canvas: Canvas, bitmap: Bitmap) {
             val left = mRectF.left + (mRectF.right - mRectF.left - bitmap.width) / 2.0f
             val top = mRectF.top + (mRectF.bottom - mRectF.top - bitmap.height) / 2.0f
-            canvas.drawBitmap(bitmap, left, top, mProgressPaint)
+            canvas.drawBitmap(bitmap, left, top, getPaint(PaintType.PROGRESS))
         }
         when (mStatus) {
-            Status.IDLE -> drawSrc(canvas, mStartBitmap)
-            else -> drawSrc(canvas, mPauseBitmap)
+            Status.RECORDING -> drawSrc(canvas, mPauseBitmap)
+            else -> drawSrc(canvas, mStartBitmap)
         }
 
     }
@@ -144,7 +213,7 @@ class BbjRecordButton @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val viewWide = measuredWidth - paddingLeft - paddingRight
         val viewHigh = measuredHeight - paddingTop - paddingBottom
-        val mRectLength = mProgressPaint.strokeWidth.toInt() / 2
+        val mRectLength = mPaint.strokeWidth.toInt() / 2
 
         mRectF = RectF(
             (paddingLeft + mRectLength).toFloat(),
@@ -153,13 +222,15 @@ class BbjRecordButton @JvmOverloads constructor(
             (paddingTop + viewHigh - mRectLength).toFloat()
         )
 
+        mPauseArcDegree = (3 * (360f / ((mRectF.right - mRectF.left) / 2 * PI))).toFloat()
+
         mCenterX = measuredWidth / 2F
         mCenterY = measuredHeight / 2F
 
     }
 
     fun start() {
-        mStatus = Status.START
+        mStatus = Status.RECORDING
         if (mBlnAnimator != null && mBlnAnimator!!.isRunning) {
             return
         }
@@ -170,7 +241,7 @@ class BbjRecordButton @JvmOverloads constructor(
             addUpdateListener { animation ->
                 mBlnRadius = animation.animatedValue as Float
                 mRecordSecond = mRecordTimeList.sum() + (animation.currentPlayTime / 1000f)
-                Log.e("wqs","sum:${mRecordTimeList.sum()}")
+                Log.e("wqs", "sum:${mRecordTimeList.sum()}")
                 invalidate()
             }
             duration = ANIM_BREATHING_LIGHT_DURATION
@@ -184,8 +255,8 @@ class BbjRecordButton @JvmOverloads constructor(
         mStatus = Status.PAUSE
         mBlnAnimator?.run {
             pause()
-            mRecordTimeList.add((currentPlayTime / 1000f).toInt())
-            Log.e("wqs","item:${(currentPlayTime / 1000f).toInt()}")
+            mRecordTimeList.add(currentPlayTime / 1000f)
+            Log.e("wqs", "item:${(currentPlayTime / 1000f).toInt()}")
             mBlnAnimator = null
             mBlnRadius = mStartBitmap.width / 2f
             invalidate()

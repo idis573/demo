@@ -9,7 +9,7 @@
     <com.example.demo.RecordPannelView
         android:id="@+id/progress_circular"
         android:layout_width="match_parent"
-        android:layout_height="136dp"
+        android:layout_height="match_parent"
         android:background="@android:color/black" />
 
 </RelativeLayout>
