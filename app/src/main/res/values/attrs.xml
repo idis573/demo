@@ -15,5 +15,9 @@
         <attr name="srcStart" format="reference" />         <!--中间按钮资源-->
         <attr name="blnMaxRadius" format="dimension"/>      <!--呼吸效果最大外圈半径-->
         <attr name="blnBackgroundColor" format="color"/>      <!--呼吸效果最大外圈半径-->
+        <attr name="recordTimeHeight" format="dimension"/>
+        <attr name="recordTimeMarginBottom" format="dimension"/>
+        <attr name="recordDotRadius" format="dimension"/>
+        <attr name="recordDotMarginRight" format="dimension"/>
     </declare-styleable>
 </resources>

@@ -14,6 +14,7 @@
         android:paddingRight="14dp">
 
         <ImageView
+            android:id="@+id/btn_close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
@@ -42,22 +43,18 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:text="00:91"
-                android:textColor="#ffffffff"
-                android:textSize="14sp" />
-
             <com.example.demo.BbjRecordButton
                 android:id="@+id/btn_record"
                 android:layout_width="112dp"
-                android:layout_height="112dp"
+                android:layout_height="match_parent"
                 app:blnBackgroundColor="#66FFFFFF"
                 app:blnMaxRadius="38dp"
                 app:progressColor="#F98C78"
                 app:progressWidth="4dp"
+                app:recordDotMarginRight="2dp"
+                app:recordDotRadius="4dp"
+                app:recordTimeHeight="20dp"
+                app:recordTimeMarginBottom="4dp"
                 app:srcPause="@drawable/pause"
                 app:srcStart="@drawable/shoot"
                 app:totalSecond="60.0" />
@@ -69,6 +66,7 @@
             android:layout_toLeftOf="@id/layout_record">
 
             <TextView
+                android:id="@+id/btn_delete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|bottom"
@@ -88,6 +86,7 @@
             android:layout_toRightOf="@id/layout_record">
 
             <TextView
+                android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|bottom"

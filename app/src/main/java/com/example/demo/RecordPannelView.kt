@@ -3,6 +3,8 @@ package com.example.demo
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.RelativeLayout
 import kotlinx.android.synthetic.main.bbj_view_record_pannel.view.*
 
@@ -16,6 +18,15 @@ class RecordPannelView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr) {
+
+    private val goneAlphaAnim = AlphaAnimation(1f, 0f).apply {
+        duration = 150L
+    }
+
+    private val visibleAlphaAnim = AlphaAnimation(0f, 1f).apply {
+        duration = 150L
+    }
+
     init {
         inflate(context, R.layout.bbj_view_record_pannel, this)
         initView()
@@ -24,10 +35,66 @@ class RecordPannelView @JvmOverloads constructor(
     private fun initView() {
         btn_record.setOnClickListener {
             if (btn_record.isPause) {
-                btn_record.start()
+                btn_record.startRecord()
             } else {
-                btn_record.pause()
+                btn_record.pauseRecord()
             }
         }
+
+        btn_record.recordListener = object : BbjRecordButton.RecordListener {
+            override fun onPause() {
+                visibleView(btn_close, btn_delete, btn_next)
+            }
+
+            override fun onComplete() {
+            }
+
+            override fun onStart() {
+                goneView(btn_close, btn_delete, btn_next)
+            }
+
+        }
+    }
+
+    private fun visibleView(vararg views: View) {
+        views.forEach {
+            it.startAnimation(visibleAlphaAnim)
+        }
+        visibleAlphaAnim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                views.forEach {
+                    it.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+            }
+
+        })
+
+    }
+
+    private fun goneView(vararg views: View) {
+        views.forEach {
+            it.startAnimation(goneAlphaAnim)
+        }
+        goneAlphaAnim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                views.forEach {
+                    it.visibility = View.GONE
+                }
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+            }
+
+        })
+
     }
 }
