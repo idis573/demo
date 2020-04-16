@@ -1,10 +1,11 @@
-package com.example.demo
+package com.example.demo.view
 
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import com.example.demo.R
 import kotlin.math.PI
 
 
@@ -93,15 +94,23 @@ class BbjRecordButton @JvmOverloads constructor(
 
 
     init {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.BbjRecordButton)
+        val typedArray = context.obtainStyledAttributes(attrs,
+            R.styleable.BbjRecordButton
+        )
 
         mPauseBitmap = BitmapFactory.decodeResource(
                 resources,
-                typedArray.getResourceId(R.styleable.BbjRecordButton_srcPause, R.drawable.pause)
+                typedArray.getResourceId(
+                    R.styleable.BbjRecordButton_srcPause,
+                    R.drawable.pause
+                )
         )
         mStartBitmap = BitmapFactory.decodeResource(
                 resources,
-                typedArray.getResourceId(R.styleable.BbjRecordButton_srcStart, R.drawable.shoot)
+                typedArray.getResourceId(
+                    R.styleable.BbjRecordButton_srcStart,
+                    R.drawable.shoot
+                )
         )
 
         mRecordTimeHeight = typedArray.getDimension(R.styleable.BbjRecordButton_recordTimeHeight, 60f)
@@ -137,7 +146,8 @@ class BbjRecordButton @JvmOverloads constructor(
                 }
                 invalidate()
             }
-            duration = ANIM_BREATHING_LIGHT_DURATION
+            duration =
+                ANIM_BREATHING_LIGHT_DURATION
             repeatMode = ValueAnimator.REVERSE
             repeatCount = -1
         }
@@ -148,7 +158,8 @@ class BbjRecordButton @JvmOverloads constructor(
                 mRecordDotAlpha = animation.animatedValue as Int
                 invalidate()
             }
-            duration = ANIM_DOT_DURATION
+            duration =
+                ANIM_DOT_DURATION
             repeatMode = ValueAnimator.REVERSE
             repeatCount = -1
         }

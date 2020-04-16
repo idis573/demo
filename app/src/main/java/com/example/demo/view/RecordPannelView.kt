@@ -1,4 +1,4 @@
-package com.example.demo
+package com.example.demo.view
 
 import android.content.Context
 import android.util.AttributeSet
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.RelativeLayout
+import com.example.demo.R
 import kotlinx.android.synthetic.main.bbj_view_record_pannel.view.*
 
 /**

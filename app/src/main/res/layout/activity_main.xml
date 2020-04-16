@@ -6,10 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.example.demo.RecordPannelView
+    <Button
+        android:id="@+id/btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="float"
+        android:visibility="gone" />
+
+
+    <com.example.demo.view.RecordPannelView
         android:id="@+id/progress_circular"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/black" />
+        android:background="@android:color/black"
+        android:visibility="gone" />
+
+    <com.example.demo.view.CounterFloatView
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@color/colorAccent"
+        app:padding="8dp" />
+
 
 </RelativeLayout>
